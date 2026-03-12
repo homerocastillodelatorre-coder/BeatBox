@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Beatbox Mini DAW</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Top header with logo -->
+    <header class="app-header">
+      <img
+        src="assets/logo.png"
+        alt="Beatbox logo"
+        class="logo"
+      />
+      <h1>Beatbox Studio</h1>
+      <p class="subtitle">Browser-based mini drum machine &amp; mini DAW</p>
+    </header>
+
+    <!-- Transport, tempo & swing -->
+    <section class="top-bar">
+      <div class="transport">
+        <button id="play-button" class="btn btn-primary">Play</button>
+        <button id="pause-button" class="btn btn-secondary">Pause</button>
+        <button id="stop-button" class="btn btn-secondary">Stop</button>
+        <button id="loop-toggle" class="btn btn-secondary btn-small">Loop</button>
+        <button id="record-toggle" class="btn btn-accent btn-small">Rec</button>
+      </div>
+
+      <div class="tempo-control">
+        <div class="tempo-block">
+          <label for="bpm-slider" class="tempo-label">
+            Tempo: <span id="bpm-value">120</span> BPM
+          </label>
+          <input
+            type="range"
+            id="bpm-slider"
+            min="60"
+            max="180"
+            value="120"
+          />
+        </div>
+        <div class="tempo-block">
+          <label for="swing-slider" class="tempo-label">
+            Swing: <span id="swing-value">0</span>%
+          </label>
+          <input
+            type="range"
+            id="swing-slider"
+            min="0"
+            max="60"
+            value="0"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- DAW-style timeline -->
+    <section class="panel timeline-panel">
+      <div class="panel-header">
+        <h2>Timeline &amp; Song Mode</h2>
+        <div class="panel-actions">
+          <button id="song-mode-toggle" class="btn btn-small btn-secondary">
+            Song Mode
+          </button>
+        </div>
+      </div>
+
+      <div class="timeline-wrapper">
+        <div class="timeline-ruler" id="timeline-ruler">
+          <!-- Filled dynamically with bars / beats marks -->
+        </div>
+        <div class="timeline-track-area">
+          <div class="timeline-pattern-row" id="timeline-pattern-row">
+            <!-- Pattern blocks go here -->
+          </div>
+          <div class="timeline-playhead" id="timeline-playhead"></div>
+        </div>
+      </div>
+
+      <div class="pattern-controls">
+        <div class="pattern-left">
+          <label class="pattern-label">
+            Pattern:
+            <select id="pattern-select">
+              <option value="0">Pattern 1</option>
+              <option value="1">Pattern 2</option>
+              <option value="2">Pattern 3</option>
+              <option value="3">Pattern 4</option>
+            </select>
+          </label>
+          <button id="pattern-save" class="btn btn-small btn-secondary">
+            Save
+          </button>
+          <button id="pattern-duplicate" class="btn btn-small btn-secondary">
+            Duplicate
+          </button>
+        </div>
+        <div class="pattern-right">
+          <label class="pattern-label">
+            Chain:
+            <select class="pattern-chain-slot" data-slot="0">
+              <option value="-1">Off</option>
+              <option value="0">P1</option>
+              <option value="1">P2</option>
+              <option value="2">P3</option>
+              <option value="3">P4</option>
+            </select>
+            <select class="pattern-chain-slot" data-slot="1">
+              <option value="-1">Off</option>
+              <option value="0">P1</option>
+              <option value="1">P2</option>
+              <option value="2">P3</option>
+              <option value="3">P4</option>
+            </select>
+            <select class="pattern-chain-slot" data-slot="2">
+              <option value="-1">Off</option>
+              <option value="0">P1</option>
+              <option value="1">P2</option>
+              <option value="2">P3</option>
+              <option value="3">P4</option>
+            </select>
+            <select class="pattern-chain-slot" data-slot="3">
+              <option value="-1">Off</option>
+              <option value="0">P1</option>
+              <option value="1">P2</option>
+              <option value="2">P3</option>
+              <option value="3">P4</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <main class="main-layout">
+      <!-- Left: Step sequencer -->
+      <section class="panel sequencer-panel">
+        <div class="panel-header">
+          <h2>Step Sequencer</h2>
+          <div class="panel-actions">
+            <button id="clear-button" class="btn btn-small">Clear Pattern</button>
+            <button id="random-button" class="btn btn-small btn-accent">
+              Random Beat
+            </button>
+          </div>
+        </div>
+
+        <!-- Column labels (step numbers) -->
+        <div class="sequencer-header">
+          <div class="track-header-cell">Track</div>
+          <div class="steps-header">
+            <span class="step-number">1</span>
+            <span class="step-number">2</span>
+            <span class="step-number">3</span>
+            <span class="step-number">4</span>
+            <span class="step-number">5</span>
+            <span class="step-number">6</span>
+            <span class="step-number">7</span>
+            <span class="step-number">8</span>
+            <span class="step-number">9</span>
+            <span class="step-number">10</span>
+            <span class="step-number">11</span>
+            <span class="step-number">12</span>
+            <span class="step-number">13</span>
+            <span class="step-number">14</span>
+            <span class="step-number">15</span>
+            <span class="step-number">16</span>
+          </div>
+        </div>
+
+        <!-- Sequencer grid (rows and steps are created in JavaScript) -->
+        <div id="sequencer-grid" class="sequencer-grid"></div>
+
+        <p class="sequencer-help">
+          Click steps to toggle. Alt+Click lowers probability, Shift+Click boosts velocity.
+        </p>
+      </section>
+
+      <!-- Right: Drum pads -->
+      <section class="panel pads-panel">
+        <div class="panel-header">
+          <h2>Drum Pads</h2>
+        </div>
+
+        <div class="pads-grid">
+          <button class="pad" data-sound="kick" data-key="q">
+            <span class="pad-label">Kick</span>
+            <span class="pad-key">Q</span>
+          </button>
+          <button class="pad" data-sound="snare" data-key="w">
+            <span class="pad-label">Snare</span>
+            <span class="pad-key">W</span>
+          </button>
+          <button class="pad" data-sound="hihat" data-key="e">
+            <span class="pad-label">Hi-hat</span>
+            <span class="pad-key">E</span>
+          </button>
+          <button class="pad" data-sound="clap" data-key="r">
+            <span class="pad-label">Clap</span>
+            <span class="pad-key">R</span>
+          </button>
+        </div>
+
+        <p class="pads-instructions">
+          Click pads or use keys:
+          <strong>Q</strong> = Kick,
+          <strong>W</strong> = Snare,
+          <strong>E</strong> = Hi-hat,
+          <strong>R</strong> = Clap.
+          Recording writes pad hits into the sequencer when the transport is running.
+        </p>
+      </section>
+    </main>
+
+    <!-- Mixer panel -->
+    <section class="panel mixer-panel">
+      <div class="panel-header">
+        <h2>Mixer</h2>
+      </div>
+      <div class="mixer-strips" id="mixer-strips">
+        <!-- Track strips built in JS -->
+      </div>
+    </section>
+
+    <!-- Piano roll editor -->
+    <section class="panel piano-roll-panel">
+      <div class="panel-header">
+        <h2>Piano Roll (Melody)</h2>
+      </div>
+      <div class="piano-roll-wrapper">
+        <div class="piano-roll-keys" id="piano-roll-keys">
+          <!-- Keys labels -->
+        </div>
+        <div class="piano-roll-grid" id="piano-roll-grid">
+          <!-- Note grid dynamically created -->
+        </div>
+      </div>
+      <p class="piano-roll-help">
+        Click in the grid to add/remove notes. Notes play in time with the main sequencer.
+      </p>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
