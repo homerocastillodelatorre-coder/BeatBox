@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Beatbox Mini DAW</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle sidebar">
+    &#9776;
+  </button>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo-wrap">
+        <img
+          src="assets/logo.png"
+          alt="BeatBox logo"
+          class="sidebar-logo"
+        />
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="sidebar-nav-item" data-section="home-section">Home</button>
+        <button class="sidebar-nav-item" data-section="explore-beats-section">
+          Explore Beats
+        </button>
+        <button class="sidebar-nav-item" data-section="my-beats-section">
+          My Beats
+        </button>
+        <button
+          class="sidebar-nav-item"
+          data-section="projects-section"
+          title="Save and load full project state"
+        >
+          Projects
+        </button>
+        <button class="sidebar-nav-item" data-section="upload-beat-section">
+          Upload Beat
+        </button>
+        <button class="sidebar-nav-item" onclick="openAboutModal()">About</button>
+        <button class="sidebar-nav-item" data-section="account-section">
+          Account
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-content">
+      <section id="home-section" class="sidebar-section sidebar-section-active">
+        <h3>Home</h3>
+        <p>Welcome to BeatBox Studio. Use the controls in the main app to create your beats, then save them to your library.</p>
+      </section>
+
+      <section id="explore-beats-section" class="sidebar-section">
+        <h3>Explore Beats</h3>
+        <div class="explore-controls">
+          <input
+            id="explore-search-input"
+            type="text"
+            placeholder="Search beats..."
+          />
+          <select id="explore-genre-filter">
+            <option value="All">All genres</option>
+          </select>
+        </div>
+
+        <div id="explore-beats-list" class="explore-beats-list"></div>
+      </section>
+
+      <section id="my-beats-section" class="sidebar-section">
+        <h3>My Beats</h3>
+        <div id="my-beats-list" class="my-beats-list">
+          <p class="sidebar-hint">No beats saved yet. Use the "Save Beat" button near the transport controls.</p>
+        </div>
+      </section>
+
+      <section id="projects-section" class="sidebar-section">
+        <h3>Projects</h3>
+        <div id="projects-list" class="my-beats-list">
+          <p class="sidebar-hint">
+            Save your full project state, then load it later.
+          </p>
+        </div>
+      </section>
+
+      <section id="upload-beat-section" class="sidebar-section">
+        <h3>Upload Beat</h3>
+        <p class="sidebar-hint">
+          Future feature: import/export full beat projects. For now, use "Save Beat" to store beats in this browser.
+        </p>
+      </section>
+
+      <!-- About modal is now a full-page overlay — see #about-modal below -->
+
+      <section id="account-section" class="sidebar-section">
+        <h3>Account</h3>
+        <div class="account-form">
+          <label>
+            <span>Username</span>
+            <input type="text" id="account-username" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" id="account-email" />
+          </label>
+          <label>
+            <span>Password</span>
+            <input type="password" id="account-password" />
+          </label>
+          <div class="account-buttons">
+            <button id="account-signup" class="btn btn-small btn-secondary">
+              Sign Up
+            </button>
+            <button id="account-login" class="btn btn-small btn-primary">
+              Log In
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="sidebar-user">
+      <span class="sidebar-user-label">Logged in as</span>
+      <span id="sidebar-username" class="sidebar-username">Guest</span>
+    </div>
+  </aside>
+
+  <div class="app">
+    <!-- Top header with logo -->
+    <header class="app-header">
+      <img
+        src="assets/logo.png"
+        alt="Beatbox logo"
+        class="logo"
+      />
+    </header>
+
+    <!-- Transport, tempo & swing -->
+    <section class="top-bar">
+      <div class="transport">
+        <button id="play-button" class="btn btn-primary">Play</button>
+        <button id="pause-button" class="btn btn-secondary">Pause</button>
+        <button id="stop-button" class="btn btn-secondary">Stop</button>
+        <button id="loop-toggle" class="btn btn-secondary btn-small">Loop</button>
+        <button
+          id="metronome-toggle"
+          class="btn btn-secondary btn-small"
+          title="Optional metronome click synced to BPM"
+        >
+          Metronome
+        </button>
+        <button id="record-toggle" class="btn btn-accent btn-small">Rec</button>
+        <button id="save-beat-button" class="btn btn-secondary btn-small">
+          Save Beat
+        </button>
+        <button
+          id="save-project-button"
+          class="btn btn-secondary btn-small"
+          title="Save full project (patterns, melody, mixer)"
+        >
+          Save Project
+        </button>
+        <button
+          id="export-beat-button"
+          class="btn btn-secondary btn-small"
+          title="Export your beat mix to a WAV file (best-effort)"
+        >
+          Export Beat
+        </button>
+      </div>
+
+      <div class="tempo-control">
+        <div class="tempo-block">
+          <label for="bpm-slider" class="tempo-label">
+            Tempo: <span id="bpm-value">120</span> BPM
+          </label>
+          <input
+            type="range"
+            id="bpm-slider"
+            min="60"
+            max="180"
+            value="120"
+          />
+          <input
+            type="number"
+            id="bpm-input"
+            min="60"
+            max="180"
+            step="1"
+            value="120"
+            class="bpm-input"
+          />
+        </div>
+        <div class="tempo-block">
+          <label for="swing-slider" class="tempo-label">
+            Swing: <span id="swing-value">0</span>%
+          </label>
+          <input
+            type="range"
+            id="swing-slider"
+            min="0"
+            max="60"
+            value="0"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- DAW-style timeline -->
+    <section class="panel timeline-panel">
+      <div class="panel-header">
+        <h2>Timeline</h2>
+      </div>
+
+      <div class="timeline-wrapper">
+        <div class="timeline-ruler" id="timeline-ruler">
+        </div>
+        <div class="timeline-track-area" id="timeline-track-area">
+          <div class="timeline-progress" id="timeline-progress"></div>
+          <div class="timeline-clips" id="timeline-clips"></div>
+          <div
+            class="timeline-loop-overlay"
+            id="timeline-loop-overlay"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="timeline-loop-marker"
+            id="timeline-loop-marker-start"
+            aria-label="Loop start"
+            role="slider"
+          ></div>
+          <div
+            class="timeline-loop-marker"
+            id="timeline-loop-marker-end"
+            aria-label="Loop end"
+            role="slider"
+          ></div>
+          <div class="timeline-playhead" id="timeline-playhead"></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="main-layout">
+      <!-- Left: Step sequencer -->
+      <section class="panel sequencer-panel">
+        <div class="panel-header">
+          <h2>Step Sequencer</h2>
+          <div class="panel-actions">
+            <button id="clear-button" class="btn btn-small">Clear Pattern</button>
+            <button id="random-button" class="btn btn-small btn-accent">
+              Random Beat
+            </button>
+            <button
+              id="add-track-button"
+              class="btn btn-small btn-secondary"
+              title="Add a new track lane"
+            >
+              Add Track
+            </button>
+            <button
+              id="remove-track-button"
+              class="btn btn-small btn-secondary"
+              title="Remove the last track lane"
+            >
+              Remove Track
+            </button>
+          </div>
+        </div>
+
+        <div class="sequencer-options">
+          <label class="pattern-label">
+            Steps:
+            <select id="step-count-select">
+              <option value="16">16</option>
+              <option value="20" selected>20</option>
+              <option value="24">24</option>
+              <option value="32">32</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Column labels (step numbers) -->
+        <div class="sequencer-header">
+          <div class="track-header-cell">Track</div>
+          <div class="steps-header">
+          </div>
+        </div>
+
+        <!-- Sequencer grid (rows and steps are created in JavaScript) -->
+        <div id="sequencer-grid" class="sequencer-grid"></div>
+
+        <p class="sequencer-help">
+          Click steps to toggle. Alt+Click lowers probability, Shift+Click boosts velocity.
+        </p>
+      </section>
+
+      <!-- Right: Drum pads -->
+      <section class="panel pads-panel">
+        <div class="panel-header">
+          <h2>Drum Pads</h2>
+        </div>
+
+        <div class="pads-grid">
+          <button class="pad" data-sound="kick" data-key="q">
+            <span class="pad-label">Kick</span>
+            <span class="pad-key">Q</span>
+          </button>
+          <button class="pad" data-sound="snare" data-key="w">
+            <span class="pad-label">Snare</span>
+            <span class="pad-key">W</span>
+          </button>
+          <button class="pad" data-sound="hihat" data-key="e">
+            <span class="pad-label">Hi-hat</span>
+            <span class="pad-key">E</span>
+          </button>
+          <button class="pad" data-sound="clap" data-key="r">
+            <span class="pad-label">Clap</span>
+            <span class="pad-key">R</span>
+          </button>
+        </div>
+
+        <div class="sample-tools">
+          <label class="sample-target-label">
+            Assign to pad:
+            <select id="sample-target-select">
+              <option value="kick">Kick</option>
+              <option value="snare">Snare</option>
+              <option value="hihat">Hi-hat</option>
+              <option value="clap">Clap</option>
+            </select>
+          </label>
+          <button id="upload-sample-button" class="btn btn-small btn-secondary">
+            Upload Sound
+          </button>
+          <button id="record-sample-button" class="btn btn-small btn-secondary">
+            Record Sample
+          </button>
+          <button
+            id="download-sample-button"
+            class="btn btn-small btn-secondary"
+            disabled
+          >
+            Download Recording
+          </button>
+          <input
+            type="file"
+            id="sample-file-input"
+            accept="audio/wav,audio/mp3,audio/mpeg,audio/*"
+            style="display: none"
+          />
+        </div>
+
+        <div class="sound-library">
+          <div class="sound-library-header">
+            <h3>Sound Library</h3>
+            <span class="sound-library-hint"
+              >Drag sounds onto sequencer tracks</span
+            >
+          </div>
+
+          <div id="sound-library-list" class="sound-library-list">
+            <!-- Sounds rendered in JS -->
+          </div>
+
+          <div class="sound-upload">
+            <button
+              id="upload-custom-sound-button"
+              class="btn btn-small btn-secondary"
+            >
+              Upload Sound
+            </button>
+            <input
+              type="file"
+              id="custom-sound-file-input"
+              accept=".wav,.mp3,audio/wav,audio/mpeg,audio/*"
+              style="display: none"
+            />
+          </div>
+        </div>
+
+        <p class="pads-instructions">
+          Click pads or use keys:
+          <strong>Q</strong> = Kick,
+          <strong>W</strong> = Snare,
+          <strong>E</strong> = Hi-hat,
+          <strong>R</strong> = Clap.
+          Recording writes pad hits into the sequencer when the transport is running.
+        </p>
+      </section>
+    </main>
+
+    <!-- Mixer panel -->
+    <section class="panel mixer-panel">
+      <div class="panel-header">
+        <h2>Mixer</h2>
+      </div>
+      <div class="mixer-strips" id="mixer-strips">
+        <!-- Track strips built in JS -->
+      </div>
+    </section>
+
+    <!-- Piano roll editor -->
+    <section class="panel piano-roll-panel">
+      <div class="panel-header">
+        <h2>Piano Roll (Melody)</h2>
+      </div>
+      <div class="piano-roll-wrapper">
+        <div class="piano-roll-keys" id="piano-roll-keys">
+          <!-- Keys labels -->
+        </div>
+        <div class="piano-roll-grid" id="piano-roll-grid">
+          <!-- Note grid dynamically created -->
+        </div>
+      </div>
+      <p class="piano-roll-help">
+        Click in the grid to add/remove notes. Notes play in time with the main sequencer.
+      </p>
+    </section>
+  </div>
+
+  <!-- ===== Firebase SDK (added for cloud beat storage + authentication) ===== -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- ===== End Firebase SDK ===== -->
+
+  <script src="app.js"></script>
+  <script src="sidebar.js"></script>
+
+  <!-- ===== ABOUT MODAL OVERLAY ===== -->
+  <div id="about-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);overflow-y:auto;" onclick="if(event.target===this)closeAboutModal()">
+    <div style="min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="background:#1a1a2e;border-radius:20px;max-width:560px;width:100%;padding:40px 36px;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);">
+
+        <!-- Close button -->
+        <button onclick="closeAboutModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.08);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">&#x2715;</button>
+
+        <!-- Logo + title -->
+        <div style="text-align:center;margin-bottom:28px">
+          <img src="assets/logo.png" alt="BeatBox logo" style="width:72px;height:72px;border-radius:16px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;">
+          <h2 style="margin:0;font-size:26px;color:#fff;font-weight:700;letter-spacing:-0.5px">BeatBox Studio</h2>
+          <p style="margin:6px 0 0;color:#60a5fa;font-size:14px;font-weight:500">Make beats. In your browser. Right now.</p>
+        </div>
+
+        <!-- What is it -->
+        <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:18px 20px;margin-bottom:14px">
+          <p style="margin:0;color:#d1d5db;font-size:14px;line-height:1.7">A free, browser-based beat maker. No downloads, no installs — just open it and start creating. Built for beginners, students, and anyone who wants to make music without expensive software.</p>
+        </div>
+
+        <!-- Features grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">🥁</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Drum Pads</div><div style="color:#9ca3af;font-size:12px">Kick, Snare, Hi-hat & Clap with keyboard shortcuts</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">🎛️</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Step Sequencer</div><div style="color:#9ca3af;font-size:12px">Up to 32 steps with velocity & probability</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">🎹</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Piano Roll</div><div style="color:#9ca3af;font-size:12px">Add melodies that play in sync</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">🎚️</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Mixer</div><div style="color:#9ca3af;font-size:12px">Volume, pan, mute, solo, reverb & delay</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">☁️</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Cloud Save</div><div style="color:#9ca3af;font-size:12px">Beats saved and accessible anywhere</div></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px">
+            <span style="font-size:20px;line-height:1">🎲</span>
+            <div><div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:2px">Random Beat</div><div style="color:#9ca3af;font-size:12px">Generate a pattern instantly</div></div>
+          </div>
+        </div>
+
+        <!-- Creator -->
+        <div style="background:rgba(96,165,250,0.08);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+          <p style="margin:0;color:#d1d5db;font-size:13px;line-height:1.6">Made by <strong style="color:#fff">Homero Castillo</strong> for a MakeSpace school project. AI helped with code suggestions — all logic reviewed and understood by the developer.</p>
+        </div>
+
+        <!-- Version + close -->
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="color:#4b5563;font-size:12px">v1.0 — March 2026</span>
+          <button onclick="closeAboutModal()" style="background:#60a5fa;color:#000;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#93c5fd'" onmouseout="this.style.background='#60a5fa'">Got it</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openAboutModal(){
+      const m=document.getElementById('about-modal');
+      m.style.display='block';
+      document.body.style.overflow='hidden';
+      setTimeout(()=>m.style.opacity='1',10);
+    }
+    function closeAboutModal(){
+      const m=document.getElementById('about-modal');
+      m.style.display='none';
+      document.body.style.overflow='';
+    }
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAboutModal();});
+  </script>
+</body>
+</html>
